@@ -25,6 +25,7 @@ class TblAccount(models.Model):
     id_card_num = models.CharField(max_length=255)
     id_card_positive_image_url = models.CharField(max_length=255)
     id_card_negative_image_url = models.CharField(max_length=255)
+    authentication = models.BooleanField(default=False, verbose_name='是否认证')
     create_time = models.BigIntegerField()
     update_time = models.BigIntegerField()
     del_time = models.BigIntegerField()
@@ -95,12 +96,12 @@ class TblProduct(models.Model):
     id = models.BigAutoField(primary_key=True)
     author_id = models.BigIntegerField()
     classify = models.BigIntegerField()
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, verbose_name='作品名称')
     description = models.TextField()
-    image = models.CharField(max_length=255)
-    price = models.IntegerField()
-    status = models.IntegerField()
-    stock = models.BigIntegerField()
+    image = models.CharField(max_length=255, verbose_name='作品图片')
+    price = models.IntegerField(verbose_name='作品价格')
+    status = models.BooleanField(verbose_name='是否支付')
+    stock = models.BigIntegerField(verbose_name='库存')
     index = models.IntegerField()
     create_time = models.IntegerField()
     update_time = models.IntegerField()
@@ -109,6 +110,7 @@ class TblProduct(models.Model):
     class Meta:
         managed = False
         db_table = 'tbl_product'
+        verbose_name = verbose_name_plural = '作品'
 
     def __str__(self):
         return self.name

@@ -12,7 +12,9 @@ from . import models
 
 @admin.register(models.TblAccount)
 class AccountAdmin(admin.ModelAdmin):
-    list_display = ('id', 'uid', 'nickname', 'img', 'phone', 'bsn_address', 'amount')
+    list_display = ('id', 'uid', 'nickname', 'img', 'phone', 'bsn_address', 'amount', 'authentication',)
+
+    list_editable = ('authentication',)
 
     def img(self, row):
         return mark_safe("<img src='{url}' width='40px'/>".format(url=row.avatar))
@@ -21,9 +23,6 @@ class AccountAdmin(admin.ModelAdmin):
     img.short_description = '头像'
 
     def has_add_permission(self, request):
-        return False
-
-    def has_change_permission(self, request, obj=None):
         return False
 
     def has_delete_permission(self, request, obj=None):
