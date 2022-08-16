@@ -77,11 +77,11 @@ class TblBank(models.Model):
 
 class TblBanner(models.Model):
     id = models.BigAutoField(primary_key=True)
-    image = models.CharField(max_length=255, default='')
-    name = models.CharField(max_length=255, default='')
-    index = models.IntegerField(default=0)
-    product_id = models.ForeignKey('TblProduct', models.DO_NOTHING, db_column='product_id')
-    link = models.CharField(max_length=255, default='')
+    image = models.ImageField(default='', verbose_name='图片')
+    name = models.CharField(max_length=255, default='', verbose_name='名称')
+    index = models.IntegerField(default=0, verbose_name='排序')
+    product_id = models.ForeignKey('TblProduct', models.DO_NOTHING, db_column='product_id', verbose_name='作品')
+    link = models.CharField(max_length=255, default='', verbose_name='外链', help_text='外链', blank=True)
     create_time = models.BigIntegerField(default=lambda: int(datetime.datetime.now().timestamp()))
     update_time = models.BigIntegerField(default=0)
     del_time = models.BigIntegerField(default=0)

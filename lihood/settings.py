@@ -124,3 +124,9 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 STATIC_ROOT = BASE_DIR / 'static_root'
+
+DEFAULT_FILE_STORAGE = 'app.storage.OssStorage'
+
+SIMPLEUI_HOME_INFO = False
+
+SIMPLEUI_STATIC_OFFLINE = True
