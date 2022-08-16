@@ -116,18 +116,35 @@ class TblWithdrawModelAdmin(admin.ModelAdmin):
 
 @admin.register(models.TblProduct)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'img', 'price', 'stock', 'status')
-    # list_editable = ('price', 'stock', 'status')
+    list_display = ('id', 'name', 'img', 'price', 'index', 'stock', 'status', 'del_time')
+    list_editable = ('del_time',)
     list_filter = ('name', 'status')
     search_fields = ('name',)
+    ordering = ('-id', '-index', 'price')
 
     def img(self, row):
         return mark_safe("<img src='{url}' width='40px'/>".format(url=row.image))
 
+    img.short_description = '图片'
+
     def has_add_permission(self, request):
         return False
 
-    def has_change_permission(self, request, obj=None):
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+admin.site.site_header = '民生数藏管理'
+admin.site.site_title = '民生数藏管理'
+admin.site.index_title = '民生数藏管理'
+
+
+@admin.register(models.TblPayType)
+class PayTypeAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'status')
+    list_editable = ('status',)
+
+    def has_add_permission(self, request):
         return False
 
     def has_delete_permission(self, request, obj=None):

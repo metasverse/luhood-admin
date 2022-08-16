@@ -93,6 +93,10 @@ class TblBanner(models.Model):
 
 
 class TblProduct(models.Model):
+    CHOICES = (
+        (0, '上架'),
+        (1, '下架'),
+    )
     id = models.BigAutoField(primary_key=True)
     author_id = models.BigIntegerField()
     classify = models.BigIntegerField()
@@ -102,10 +106,10 @@ class TblProduct(models.Model):
     price = models.IntegerField(verbose_name='作品价格')
     status = models.BooleanField(verbose_name='是否支付')
     stock = models.BigIntegerField(verbose_name='库存')
-    index = models.IntegerField()
+    index = models.IntegerField(verbose_name='排序')
     create_time = models.IntegerField()
     update_time = models.IntegerField()
-    del_time = models.IntegerField()
+    del_time = models.SmallIntegerField(default=0, verbose_name='是否上架', choices=CHOICES)
 
     class Meta:
         managed = False
@@ -212,3 +216,17 @@ class TblWithdraw(models.Model):
         managed = False
         db_table = 'tbl_withdraw'
         verbose_name = verbose_name_plural = '提现记录'
+
+
+class TblPayType(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    name = models.CharField(max_length=255)
+    status = models.BooleanField(default=True, verbose_name='是否启用')
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        managed = False
+        db_table = 'tbl_pay_type'
+        verbose_name = verbose_name_plural = '支付渠道'
