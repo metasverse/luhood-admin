@@ -1,9 +1,14 @@
 import datetime
 import time
 
-from django.contrib import admin
+from django.conf import settings
+
+from django.contrib import admin, messages
+from django.http import JsonResponse
 
 from django.utils.safestring import mark_safe
+
+from simpleui.admin import AjaxAdmin
 
 from . import models
 
@@ -39,10 +44,14 @@ class TblBannerModelAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'index', 'product_name', 'product_img')
 
     def product_name(self, row):
-        return row.product_id.name
+        return row.product_id.pid.name
+
+    product_name.short_description = '作品名称'
 
     def product_img(self, row):
-        return mark_safe("<img src='{url}' width='40px'/>".format(url=row.product_id.image))
+        return mark_safe("<img src='{url}' width='40px'/>".format(url=row.product_id.pid.image))
+
+    product_img.short_description = '作品图片'
 
 
 @admin.register(models.TblRecommend)
@@ -50,10 +59,14 @@ class TblRecommendModelAdmin(admin.ModelAdmin):
     list_display = ('id', 'index', 'product_name', 'product_img')
 
     def product_name(self, row):
-        return row.product_id.name
+        return row.product_id.pid.name
+
+    product_name.short_description = '作品名称'
 
     def product_img(self, row):
-        return mark_safe("<img src='{url}' width='40px'/>".format(url=row.product_id.image))
+        return mark_safe("<img src='{url}' width='40px'/>".format(url=row.product_id.pid.image))
+
+    product_img.short_description = '作品图片'
 
 
 @admin.register(models.TblWithdraw)
@@ -115,23 +128,59 @@ class TblWithdrawModelAdmin(admin.ModelAdmin):
 
 
 @admin.register(models.TblProduct)
-class ProductAdmin(admin.ModelAdmin):
+class ProductAdmin(AjaxAdmin, admin.ModelAdmin):
     list_display = ('id', 'name', 'img', 'price', 'index', 'stock', 'status', 'del_time')
     list_editable = ('del_time',)
     list_filter = ('name', 'status')
     search_fields = ('name',)
     ordering = ('-id', '-index', 'price')
 
+    readonly_fields = ('classify', 'create_time', 'update_time')
+
+    actions = ['air_drop']
+
     def img(self, row):
         return mark_safe("<img src='{url}' width='40px'/>".format(url=row.image))
 
     img.short_description = '图片'
 
-    def has_add_permission(self, request):
-        return False
+    def air_drop(self, request, queryset):
+        if not queryset:
+            return JsonResponse({})
+        # messages.add_message(request, messages.SUCCESS, 'SUCCESS')
+        return JsonResponse({'status': 'success', 'msg': '空投成功'})
+
+    air_drop.short_description = "空投"
+    air_drop.type = 'danger'
+    air_drop.layer = {
+        'params': [
+            {
+                'type': 'textarea',
+                'key': 'phones',
+                'label': '手机号码',
+            }
+        ],
+        'title': '空投手机号码',
+        'tips': '多个手机号码以换行隔开'
+    }
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+    def save_model(self, request, obj, form, change):
+        import requests
+        data = {
+            "name": obj.name,
+            'price': obj.price,
+            'image': obj.image,
+            'uid': obj.author_id,
+            'count': obj.stock,
+            'description': obj.description,
+            'password': 'PublicProductRequest'
+        }
+        resp = requests.post(settings.SERVER_DOMAIN + "/api/v1/product/create/public", json=data)
+        if resp.json().success:
+            messages.add_message(request, messages.SUCCESS, "创建成功")
 
 
 admin.site.site_header = '民生数藏管理'

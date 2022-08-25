@@ -80,7 +80,8 @@ class TblBanner(models.Model):
     image = models.ImageField(default='', verbose_name='图片')
     name = models.CharField(max_length=255, default='', verbose_name='名称')
     index = models.IntegerField(default=0, verbose_name='排序')
-    product_id = models.ForeignKey('TblProduct', models.DO_NOTHING, db_column='product_id', verbose_name='作品')
+    product_id = models.ForeignKey('TblProductSellHistory', models.DO_NOTHING, db_column='product_id',
+                                   verbose_name='作品')
     link = models.CharField(max_length=255, default='', verbose_name='外链', help_text='外链', blank=True)
     create_time = models.BigIntegerField(default=lambda: int(datetime.datetime.now().timestamp()))
     update_time = models.BigIntegerField(default=0)
@@ -98,17 +99,17 @@ class TblProduct(models.Model):
         (1, '下架'),
     )
     id = models.BigAutoField(primary_key=True)
-    author_id = models.BigIntegerField()
-    classify = models.BigIntegerField()
+    author_id = models.BigIntegerField(verbose_name='用户id')
+    classify = models.BigIntegerField(default=0, blank=True)
     name = models.CharField(max_length=255, verbose_name='作品名称')
-    description = models.TextField()
-    image = models.CharField(max_length=255, verbose_name='作品图片')
+    description = models.TextField(verbose_name='描述')
+    image = models.ImageField(max_length=255, verbose_name='作品图片')
     price = models.IntegerField(verbose_name='作品价格')
     status = models.BooleanField(verbose_name='是否支付')
     stock = models.BigIntegerField(verbose_name='库存')
     index = models.IntegerField(verbose_name='排序')
-    create_time = models.IntegerField()
-    update_time = models.IntegerField()
+    create_time = models.IntegerField(blank=True)
+    update_time = models.IntegerField(blank=True)
     del_time = models.SmallIntegerField(default=0, verbose_name='是否上架', choices=CHOICES)
 
     class Meta:
@@ -159,13 +160,17 @@ class TblProductOrder(models.Model):
 
 class TblProductSellHistory(models.Model):
     id = models.BigAutoField(primary_key=True)
-    pid = models.BigIntegerField()
+    pid = models.ForeignKey('TblProduct', on_delete=models.DO_NOTHING, db_column='pid')
     uid = models.BigIntegerField()
+    times = models.IntegerField()
     create_time = models.IntegerField()
 
     class Meta:
         managed = False
         db_table = 'tbl_product_sell_history'
+
+    def __str__(self):
+        return f'#{self.times}-{self.pid.name}'
 
 
 class TblRecommend(models.Model):
@@ -174,7 +179,7 @@ class TblRecommend(models.Model):
         (1, '禁用'),
     )
     id = models.BigAutoField(primary_key=True)
-    product_id = models.ForeignKey('TblProduct', models.DO_NOTHING, db_column='product_id', verbose_name='作品')
+    product_id = models.ForeignKey('TblProductSellHistory', models.DO_NOTHING, db_column='product_id', verbose_name='作品')
     index = models.IntegerField(verbose_name='排序')
     status = models.IntegerField(default=0, choices=STATUS_CHOICES, verbose_name='状态')
 
