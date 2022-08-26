@@ -10,7 +10,7 @@ from django.utils.safestring import mark_safe
 
 from simpleui.admin import AjaxAdmin
 
-from . import models
+from . import models, storage
 
 
 # Register your models here.
@@ -168,19 +168,26 @@ class ProductAdmin(AjaxAdmin, admin.ModelAdmin):
         return False
 
     def save_model(self, request, obj, form, change):
+        obj.create_time = int(time.time())
+        obj.update_time = 0
+
+        super(ProductAdmin, self).save_model(request, obj, form, change)
         import requests
         data = {
             "name": obj.name,
             'price': obj.price,
-            'image': obj.image,
+            'image': obj.image.url,
             'uid': obj.author_id,
             'count': obj.stock,
             'description': obj.description,
             'password': 'PublicProductRequest'
         }
+        obj.delete()
         resp = requests.post(settings.SERVER_DOMAIN + "/api/v1/product/create/public", json=data)
-        if resp.json().success:
+        if resp.json().get('success'):
             messages.add_message(request, messages.SUCCESS, "创建成功")
+        else:
+            messages.add_message(request, messages.ERROR, "创建失败")
 
 
 admin.site.site_header = '民生数藏管理'
