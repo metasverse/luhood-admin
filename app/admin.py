@@ -10,7 +10,8 @@ from django.utils.safestring import mark_safe
 
 from simpleui.admin import AjaxAdmin
 
-from . import models, storage
+from . import models
+import requests
 
 
 # Register your models here.
@@ -147,8 +148,26 @@ class ProductAdmin(AjaxAdmin, admin.ModelAdmin):
     def air_drop(self, request, queryset):
         if not queryset:
             return JsonResponse({})
-        # messages.add_message(request, messages.SUCCESS, 'SUCCESS')
-        return JsonResponse({'status': 'success', 'msg': '空投成功'})
+        if queryset.count() > 1:
+            return JsonResponse({'status': 'error', 'msg': '请只选择一个作品'})
+        # 校验手机号码
+        phones = request.POST.get('phones', '')
+        phones = phones.split('\r\n')
+        if len(phones) == 0:
+            return JsonResponse({'status': 'error', 'msg': '请输入手机号码'})
+        for phone in phones:
+            if not models.TblAccount.objects.filter(phone=phone).exists():
+                return JsonResponse({'status': 'error', 'msg': f'手机号码为{phone}的用户不存在'})
+        # 请求空投接口
+        obj = queryset.first()
+        print(obj)
+        data = {
+            'pid': obj.id,
+            'phones': phones
+        }
+        resp = requests.post(settings.SERVER_DOMAIN + "/api/v1/product/airdrop", json=data)
+        print(resp.text)
+        return JsonResponse({'status': 'success', 'msg': resp.json()['data']})
 
     air_drop.short_description = "空投"
     air_drop.type = 'danger'
