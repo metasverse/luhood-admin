@@ -203,6 +203,7 @@ class ProductAdmin(AjaxAdmin, admin.ModelAdmin):
         }
         obj.delete()
         resp = requests.post(settings.SERVER_DOMAIN + "/api/v1/product/create/public", json=data)
+        print(resp.json())
         if resp.json().get('success'):
             messages.add_message(request, messages.SUCCESS, "创建成功")
         else:
