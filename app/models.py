@@ -99,7 +99,8 @@ class TblProduct(models.Model):
         (1, '下架'),
     )
     id = models.BigAutoField(primary_key=True)
-    author_id = models.BigIntegerField(verbose_name='用户id')
+    author_id = models.ForeignKey('TblAccount', on_delete=models.DO_NOTHING, verbose_name='用户id',
+                                  db_column='author_id')
     classify = models.BigIntegerField(default=0, blank=True)
     name = models.CharField(max_length=255, verbose_name='作品名称')
     description = models.TextField(verbose_name='描述')
@@ -161,13 +162,20 @@ class TblProductOrder(models.Model):
 class TblProductSellHistory(models.Model):
     id = models.BigAutoField(primary_key=True)
     pid = models.ForeignKey('TblProduct', on_delete=models.DO_NOTHING, db_column='pid')
-    uid = models.BigIntegerField()
+    uid = models.ForeignKey('TblAccount', on_delete=models.DO_NOTHING, db_column='uid')
     times = models.IntegerField()
+    tx_id = models.CharField(max_length=255)
+    token_id = models.CharField(max_length=255)
+    hash = models.CharField(max_length=255)
+    cid = models.CharField(max_length=255)
+    status = models.BooleanField(verbose_name='是否上链')
+    display = models.BooleanField(verbose_name='是否展示')
     create_time = models.IntegerField()
 
     class Meta:
         managed = False
-        db_table = 'tbl_product_sell_history'
+        db_table = 'tbl_user_product'
+        verbose_name = verbose_name_plural = '用户作品'
 
     def __str__(self):
         return f'#{self.times}-{self.pid.name}'
@@ -179,7 +187,8 @@ class TblRecommend(models.Model):
         (1, '禁用'),
     )
     id = models.BigAutoField(primary_key=True)
-    product_id = models.ForeignKey('TblProductSellHistory', models.DO_NOTHING, db_column='product_id', verbose_name='作品')
+    product_id = models.ForeignKey('TblProductSellHistory', models.DO_NOTHING, db_column='product_id',
+                                   verbose_name='作品')
     index = models.IntegerField(verbose_name='排序')
     status = models.IntegerField(default=0, choices=STATUS_CHOICES, verbose_name='状态')
 
@@ -235,3 +244,48 @@ class TblPayType(models.Model):
         managed = False
         db_table = 'tbl_pay_type'
         verbose_name = verbose_name_plural = '支付渠道'
+
+
+class TblProductSellHistoryAirDrop(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    pid = models.ForeignKey('TblProduct', on_delete=models.DO_NOTHING, db_column='pid')
+    uid = models.ForeignKey('TblAccount', on_delete=models.DO_NOTHING, db_column='uid')
+    times = models.IntegerField()
+    tx_id = models.CharField(max_length=255)
+    token_id = models.CharField(max_length=255)
+    hash = models.CharField(max_length=255)
+    cid = models.CharField(max_length=255)
+    status = models.BooleanField(verbose_name='是否上链')
+    display = models.BooleanField(verbose_name='是否展示')
+    create_time = models.IntegerField()
+
+    class Meta:
+        managed = False
+        db_table = 'tbl_user_product'
+        verbose_name = verbose_name_plural = '空投'
+
+    def __str__(self):
+        return f'#{self.times}-{self.pid.name}'
+
+
+class TblAirDropRecord(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    pid = models.ForeignKey('TblProduct', on_delete=models.DO_NOTHING, db_column='pid')
+    uid = models.ForeignKey('TblAccount', on_delete=models.DO_NOTHING, db_column='uid')
+    times = models.IntegerField()
+    tx_id = models.CharField(max_length=255)
+    token_id = models.CharField(max_length=255)
+    hash = models.CharField(max_length=255)
+    cid = models.CharField(max_length=255)
+    status = models.BooleanField(verbose_name='是否上链')
+    display = models.BooleanField(verbose_name='是否展示')
+    is_air_drop = models.BooleanField(verbose_name='是否为空投')
+    create_time = models.IntegerField()
+
+    class Meta:
+        managed = False
+        db_table = 'tbl_user_product'
+        verbose_name = verbose_name_plural = '空投记录'
+
+    def __str__(self):
+        return f'#{self.times}-{self.pid.name}'
