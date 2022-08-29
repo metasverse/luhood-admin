@@ -308,8 +308,11 @@ class TblProductSellHistory(admin.ModelAdmin):
 
 
 @admin.register(models.TblProductSellHistoryAirDrop)
-class TblProductSellHistory(AjaxAdmin):
+class TblProductSellHistoryAirDrop(AjaxAdmin):
     list_display = ['id', 'name', 'image', 'price', 'status', 'display', 'author_name', 'owner_name']
+
+    def get_queryset(self, request):
+        return super(TblProductSellHistoryAirDrop, self).get_queryset(request).filter(is_air_drop=False)
 
     def name(self, row):
         return row.pid.name

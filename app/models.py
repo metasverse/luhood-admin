@@ -257,6 +257,7 @@ class TblProductSellHistoryAirDrop(models.Model):
     cid = models.CharField(max_length=255)
     status = models.BooleanField(verbose_name='是否上链')
     display = models.BooleanField(verbose_name='是否展示')
+    is_air_drop = models.BooleanField()
     create_time = models.IntegerField()
 
     class Meta:
