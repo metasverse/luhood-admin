@@ -178,6 +178,7 @@ class TblProductSellHistory(models.Model):
         verbose_name = verbose_name_plural = '用户作品'
 
     def __str__(self):
+        print(self.pid)
         return f'#{self.times}-{self.pid.name}'
 
 

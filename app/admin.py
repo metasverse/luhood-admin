@@ -236,8 +236,6 @@ class TblProductSellHistory(admin.ModelAdmin):
 
     list_editable = ['display']
 
-    form = forms.ProductAddForm
-
     def name(self, row):
         return row.pid.name
 
@@ -266,45 +264,8 @@ class TblProductSellHistory(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
-    def save_form(self, request, form, change):
-        if change:
-            obj = form.cleaned_data.get('id')
-            obj.display = form.cleaned_data.get('display')
-            obj.save()
-            return
-        image = form.cleaned_data.get('image')
-        author = models.TblAccount.objects.get(phone=form.cleaned_data.get('phone'))
-        path = OssStorage().save(uuid.uuid4().__str__() + image.name.split('.')[-1], image)
-        data = {
-            "name": form.cleaned_data.get('name'),
-            'price': int(form.cleaned_data.get('price')),
-            'image': path,
-            'uid': author.id,
-            'count': form.cleaned_data.get('stock'),
-            'description': form.cleaned_data.get('desc'),
-            'password': 'PublicProductRequest'
-        }
-        resp = requests.post(settings.SERVER_DOMAIN + "/api/v1/product/create/public", json=data)
-        print(resp.json())
-        if resp.json().get('success'):
-            messages.add_message(request, messages.SUCCESS, "创建成功")
-        else:
-            messages.add_message(request, messages.ERROR, "创建失败")
-
-    def save_model(self, request, obj, form, change):
-        pass
-
-    def save_related(self, request, form, formsets, change):
-        pass
-
-    def log_addition(self, request, obj, message):
-        pass
-
-    def log_change(self, request, obj, message):
-        pass
-
-    def response_add(self, request, obj, post_url_continue=None):
-        return HttpResponseRedirect("/admin/#/admin/app/tblproductsellhistory/")
+    def has_add_permission(self, request):
+        return False
 
 
 @admin.register(models.TblProductSellHistoryAirDrop)
@@ -345,9 +306,6 @@ class TblProductSellHistoryAirDrop(AjaxAdmin):
     def has_change_permission(self, request, obj=None):
         return False
 
-    def has_add_permission(self, request):
-        return False
-
     def air_drop(self, request, queryset):
         if not queryset:
             return JsonResponse({})
@@ -374,6 +332,8 @@ class TblProductSellHistoryAirDrop(AjaxAdmin):
 
     actions = ['air_drop']
 
+    form = forms.ProductAddForm
+
     air_drop.short_description = "空投"
     air_drop.type = 'danger'
     air_drop.layer = {
@@ -387,6 +347,46 @@ class TblProductSellHistoryAirDrop(AjaxAdmin):
         'title': '空投手机号码',
         'tips': '多个手机号码以换行隔开'
     }
+
+    def save_form(self, request, form, change):
+        if change:
+            obj = form.cleaned_data.get('id')
+            obj.display = form.cleaned_data.get('display')
+            obj.save()
+            return
+        image = form.cleaned_data.get('image')
+        author = models.TblAccount.objects.get(phone=form.cleaned_data.get('phone'))
+        path = OssStorage().save(uuid.uuid4().__str__() + image.name.split('.')[-1], image)
+        data = {
+            "name": form.cleaned_data.get('name'),
+            'price': 100,
+            'image': path,
+            'uid': author.id,
+            'count': form.cleaned_data.get('stock'),
+            'description': form.cleaned_data.get('desc'),
+            'password': 'PublicProductRequest'
+        }
+        resp = requests.post(settings.SERVER_DOMAIN + "/api/v1/product/create/public", json=data)
+        print(resp.json())
+        if resp.json().get('success'):
+            messages.add_message(request, messages.SUCCESS, "创建成功")
+        else:
+            messages.add_message(request, messages.ERROR, "创建失败")
+
+    def save_model(self, request, obj, form, change):
+        pass
+
+    def save_related(self, request, form, formsets, change):
+        pass
+
+    def log_addition(self, request, obj, message):
+        pass
+
+    def log_change(self, request, obj, message):
+        pass
+
+    def response_add(self, request, obj, post_url_continue=None):
+        return HttpResponseRedirect("/admin/#/admin/app/tblproductsellhistory/")
 
 
 @admin.register(models.TblAirDropRecord)
