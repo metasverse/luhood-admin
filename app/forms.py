@@ -7,7 +7,7 @@ class ProductAddForm(forms.ModelForm):
     name = forms.CharField(max_length=255, label='作品名称')
     desc = forms.CharField(max_length=255, label='作品描述')
     # price = forms.IntegerField(min_value=1, label='作品价格')
-    stock = forms.IntegerField(min_value=1, label='空头份数')
+    stock = forms.IntegerField(min_value=1, label='空投份数')
     image = forms.ImageField(label='作品图片')
 
     class Meta:
