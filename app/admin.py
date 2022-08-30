@@ -270,10 +270,20 @@ class TblProductSellHistory(admin.ModelAdmin):
 
 @admin.register(models.TblProductSellHistoryAirDrop)
 class TblProductSellHistoryAirDrop(AjaxAdmin):
-    list_display = ['id', 'name', 'image', 'price', 'status', 'display', 'author_name', 'owner_name']
+    list_display = ['id', 'name', 'image', 'price', 'status', 'stock', 'stock_count', 'author_name', 'owner_name']
 
     def get_queryset(self, request):
         return super(TblProductSellHistoryAirDrop, self).get_queryset(request).filter(is_air_drop=False)
+
+    def stock(self, row):
+        return row.pid.stock
+
+    stock.short_description = '总空投份数'
+
+    def stock_count(self, row):
+        return models.TblProductSellHistoryAirDrop.objects.filter(status=True, is_air_drop=True, pid=row.pid).count()
+
+    stock_count.short_description = '已成功空投份数'
 
     def name(self, row):
         return row.pid.name
@@ -391,7 +401,7 @@ class TblProductSellHistoryAirDrop(AjaxAdmin):
 
 @admin.register(models.TblAirDropRecord)
 class TblAirDropRecordModelAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name', 'image', 'price', 'status', 'display', 'author_name', 'owner_name']
+    list_display = ['id', 'name', 'image', 'price', 'status', 'author_name', 'owner_name']
 
     def name(self, row):
         return row.pid.name
