@@ -13,7 +13,8 @@ class ProductAddForm(forms.ModelForm):
     class Meta:
         model = models.TblProductSellHistory
         exclude = (
-        'pid', 'uid', 'times', 'tx_id', 'token_id', 'hash', 'cid', 'status', 'display', 'create_time', 'is_air_drop')
+            'pid', 'uid', 'times', 'tx_id', 'token_id', 'hash', 'cid', 'status', 'display', 'create_time',
+            'is_air_drop')
 
     def clean(self):
         super(ProductAddForm, self).clean()
