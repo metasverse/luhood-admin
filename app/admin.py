@@ -16,6 +16,7 @@ from . import models
 from . import forms
 import requests
 from .storage import OssStorage
+import xlrd2 as xlrd
 
 
 # Register your models here.
@@ -345,7 +346,7 @@ class TblProductSellHistoryAirDrop(AjaxAdmin):
         print(resp.text)
         return JsonResponse({'status': 'success', 'msg': resp.json()['data']})
 
-    actions = ['air_drop']
+    actions = ['air_drop', 'air_drop_excel']
 
     form = forms.ProductAddForm
 
@@ -407,6 +408,55 @@ class TblProductSellHistoryAirDrop(AjaxAdmin):
         product = models.TblProductSellHistory.objects.get(pk=object_id)
         print(product)
         return render(request, 'air_drop_change_template.html', {'product': product})
+
+    def air_drop_excel(self, request, queryset):
+        if not queryset:
+            return JsonResponse({})
+        if queryset.count() > 1:
+            return JsonResponse({'status': 'error', 'msg': '请只选择一个作品'})
+        # 校验手机号码
+        file = request.FILES.get('file')
+
+        workbook = xlrd.open_workbook(file_contents=file.read())
+        sheet = workbook.sheets()[0]
+
+        rows = sheet.nrows
+
+        phones = []
+
+        for row in range(rows):
+            data = sheet.row(row)[0].value
+            if not isinstance(data, float):
+                return JsonResponse({'status': 'error', 'msg': f'手机号码为{data}的格式错误'})
+            phone = str(int(data))
+            if not models.TblAccount.objects.filter(phone=phone).exists():
+                return JsonResponse({'status': 'error', 'msg': f'手机号码为{phone}的用户不存在'})
+            phones.append(phone)
+
+        # 请求空投接口
+        obj = queryset.first()
+        print(obj)
+        data = {
+            'pid': obj.id,
+            'phones': phones
+        }
+        resp = requests.post(settings.SERVER_DOMAIN + "/api/v1/product/airdrop", json=data)
+        print(resp.text)
+        return JsonResponse({'status': 'success', 'msg': resp.json()['data']})
+
+    air_drop_excel.short_description = "空投2"
+    air_drop_excel.type = 'danger'
+    air_drop_excel.layer = {
+        'params': [
+            {
+                'type': 'file',
+                'key': 'file',
+                'label': '文件',
+            }
+        ],
+        'title': '空投手机号码',
+        'tips': '存有站内用户手机号码的excel文件, 格式为xlsx'
+    }
 
 
 @admin.register(models.TblAirDropRecord)
