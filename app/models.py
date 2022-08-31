@@ -283,6 +283,7 @@ class TblAirDropRecord(models.Model):
     display = models.BooleanField(verbose_name='是否展示')
     is_air_drop = models.BooleanField(verbose_name='是否为空投')
     create_time = models.IntegerField()
+    reason = models.CharField(max_length=255, verbose_name='失败原因')
 
     class Meta:
         managed = False

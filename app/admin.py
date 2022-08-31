@@ -1,11 +1,13 @@
 import datetime
 import time
 import uuid
+import io
 
 from django.conf import settings
 
 from django.contrib import admin, messages
-from django.http import JsonResponse, HttpResponseRedirect
+from django.db.models import Q
+from django.http import JsonResponse, HttpResponseRedirect, FileResponse
 from django.shortcuts import render
 
 from django.utils.safestring import mark_safe
@@ -17,6 +19,7 @@ from . import forms
 import requests
 from .storage import OssStorage
 import xlrd2 as xlrd
+import xlwt
 
 
 # Register your models here.
@@ -461,7 +464,7 @@ class TblProductSellHistoryAirDrop(AjaxAdmin):
 
 @admin.register(models.TblAirDropRecord)
 class TblAirDropRecordModelAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name', 'image', 'price', 'status', 'author_name', 'owner_name']
+    list_display = ['id', 'name', 'image', 'price', 'status', 'author_name', 'owner_name', 'reason']
 
     def name(self, row):
         return row.pid.name
@@ -499,3 +502,65 @@ class TblAirDropRecordModelAdmin(admin.ModelAdmin):
 
     def has_change_permission(self, request, obj=None):
         return False
+
+    actions = ['export_fail_record']
+
+    def export_fail_record(self, request, queryset):
+        """
+
+        :param request:
+        :param queryset:
+        :return:
+        """
+
+    export_fail_record.short_description = '导出失败记录'
+    export_fail_record.icon = 'el-icon-view'  # 按钮显示的图标
+    export_fail_record.enable = True
+    export_fail_record.type = 'success'
+
+    def changelist_view(self, request, extra_context=None):
+        if 'action' in request.POST and request.POST['action'] == 'export_fail_record':
+            # 查询失败的作品
+            queryset = models.TblAirDropRecord.objects.filter(~Q(reason=''))
+            # 导出
+            workbook = xlwt.Workbook(encoding='utf-8')
+            sheet = workbook.add_sheet('sheet1')
+            alignment = xlwt.Alignment()
+
+            alignment.horz = xlwt.Alignment.HORZ_CENTER
+
+            alignment.vert = xlwt.Alignment.VERT_CENTER
+
+            style = xlwt.XFStyle()
+
+            style.alignment = alignment
+
+            header = ('id', '作品名称', '作品图片', '作者', '空投对象', '失败原因', '空投时间')
+
+            for i in range(len(header)):
+                sheet.write(0, i, header[i], style)
+
+            # 开始写数据
+            for index, each in enumerate(queryset.all()):
+                index = index + 1
+                data = (
+                    each.id,
+                    each.pid.name,
+                    each.pid.image.url,
+                    each.pid.author_id.nickname,
+                    each.uid.nickname,
+                    each.reason,
+                    datetime.datetime.fromtimestamp(each.create_time).strftime("%Y-%m-%d %H:%M:%S")
+                )
+                for i in range(len(data)):
+                    sheet.write(index, i, data[i], style)
+
+            buffer = io.BytesIO()
+
+            workbook.save(buffer)
+
+            res = FileResponse(io.BytesIO(buffer.getvalue()))
+            res["Content-Type"] = "application/octet-stream"
+            res["Content-Disposition"] = 'filename="air_drop_fail.xlsx"'
+            return res
+        return super().changelist_view(request, extra_context)

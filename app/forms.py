@@ -14,7 +14,7 @@ class ProductAddForm(forms.ModelForm):
         model = models.TblProductSellHistory
         exclude = (
             'pid', 'uid', 'times', 'tx_id', 'token_id', 'hash', 'cid', 'status', 'display', 'create_time',
-            'is_air_drop')
+            'is_air_drop', 'reason')
 
     def clean(self):
         super(ProductAddForm, self).clean()
