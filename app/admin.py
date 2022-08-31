@@ -6,6 +6,7 @@ from django.conf import settings
 
 from django.contrib import admin, messages
 from django.http import JsonResponse, HttpResponseRedirect
+from django.shortcuts import render
 
 from django.utils.safestring import mark_safe
 
@@ -272,6 +273,10 @@ class TblProductSellHistory(admin.ModelAdmin):
 class TblProductSellHistoryAirDrop(AjaxAdmin):
     list_display = ['id', 'name', 'image', 'price', 'status', 'stock', 'stock_count', 'author_name', 'owner_name']
 
+    actions_on_bottom = True
+
+    actions_on_top = False
+
     def get_queryset(self, request):
         return super(TblProductSellHistoryAirDrop, self).get_queryset(request).filter(is_air_drop=False)
 
@@ -397,6 +402,11 @@ class TblProductSellHistoryAirDrop(AjaxAdmin):
 
     def response_add(self, request, obj, post_url_continue=None):
         return HttpResponseRedirect("/admin/#/admin/app/tblproductsellhistory/")
+
+    def change_view(self, request, object_id, form_url="", extra_context=None):
+        product = models.TblProductSellHistory.objects.get(pk=object_id)
+        print(product)
+        return render(request, 'air_drop_change_template.html', {'product': product})
 
 
 @admin.register(models.TblAirDropRecord)
