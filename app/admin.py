@@ -248,7 +248,7 @@ class TblProductSellHistory(admin.ModelAdmin):
     stock.short_description = '总份数'
 
     def stock_count(self, row):
-        return models.TblProductOrder.objects.filter(pid=row.pid.id, status=1).count()
+        return models.TblProductOrder.objects.filter(pid=row.id, status=1).count()
 
     stock_count.short_description = '已出售份数'
 
@@ -603,22 +603,22 @@ class OrderAdmin(admin.ModelAdmin):
         return super(OrderAdmin, self).get_queryset(request).filter(status=1)
 
     def name(self, row):
-        return row.pid.name
+        return row.pid.pid.name
 
     name.short_description = '作品名称'
 
     def image(self, row):
-        return mark_safe("<img src='{url}' width='40px'/>".format(url=row.pid.image))
+        return mark_safe("<img src='{url}' width='40px'/>".format(url=row.pid.pid.image))
 
     image.short_description = '图片'
 
     def price(self, row):
-        return f'{row.pid.price / 100}元'
+        return f'{row.pid.pid.price / 100}元'
 
     price.short_description = '价格'
 
     def author_name(self, row):
-        return row.pid.author_id.nickname
+        return row.pid.pid.author_id.nickname
 
     author_name.short_description = '作者'
 

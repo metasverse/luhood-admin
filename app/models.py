@@ -164,7 +164,7 @@ class TblProductOrderDisplay(models.Model):
     oid = models.CharField(max_length=255)
     pay_type = models.CharField(max_length=255)
     uid = models.ForeignKey('TblAccount', models.DO_NOTHING, db_column='uid')
-    pid = models.ForeignKey('TblProduct', models.DO_NOTHING, db_column='pid')
+    pid = models.ForeignKey('TblProductSellHistory', models.DO_NOTHING, db_column='pid')
     status = models.IntegerField()
     create_time = models.IntegerField()
     pay_time = models.IntegerField()
