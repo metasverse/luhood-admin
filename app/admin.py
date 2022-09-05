@@ -237,9 +237,28 @@ class PayTypeAdmin(admin.ModelAdmin):
 
 @admin.register(models.TblProductSellHistory)
 class TblProductSellHistory(admin.ModelAdmin):
-    list_display = ['id', 'name', 'image', 'price', 'status', 'display', 'author_name', 'owner_name']
+    list_display = ['id', 'name', 'image', 'price', 'status', 'display', 'stock', 'stock_count', 'author_name',
+                    'owner_name']
 
     list_editable = ['display']
+
+    def stock(self, row):
+        return row.pid.stock
+
+    stock.short_description = '总份数'
+
+    def stock_count(self, row):
+        return models.TblProductOrder.objects.filter(pid=row.pid.id, status=1).count()
+
+    stock_count.short_description = '已出售份数'
+
+    def change_view(self, request, object_id, form_url="", extra_context=None):
+        product = models.TblProductSellHistory.objects.get(pk=object_id)
+        print(product)
+        return render(request, 'air_drop_change_template.html', {'product': product})
+
+    def get_queryset(self, request):
+        return super(TblProductSellHistory, self).get_queryset(request).filter(is_air_drop=False)
 
     def name(self, row):
         return row.pid.name
@@ -564,3 +583,46 @@ class TblAirDropRecordModelAdmin(admin.ModelAdmin):
             res["Content-Disposition"] = 'filename="air_drop_fail.xlsx"'
             return res
         return super().changelist_view(request, extra_context)
+
+
+@admin.register(models.TblProductOrderDisplay)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ['id', 'name', 'image', 'price', 'author_name', 'owner_name']
+
+    actions_on_bottom = True
+
+    actions_on_top = False
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def get_queryset(self, request):
+        return super(OrderAdmin, self).get_queryset(request).filter(status=1)
+
+    def name(self, row):
+        return row.pid.name
+
+    name.short_description = '作品名称'
+
+    def image(self, row):
+        return mark_safe("<img src='{url}' width='40px'/>".format(url=row.pid.image))
+
+    image.short_description = '图片'
+
+    def price(self, row):
+        return f'{row.pid.price / 100}元'
+
+    price.short_description = '价格'
+
+    def author_name(self, row):
+        return row.pid.author_id.nickname
+
+    author_name.short_description = '作者'
+
+    def owner_name(self, row):
+        return row.uid.nickname
+
+    owner_name.short_description = '拥有者'

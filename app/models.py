@@ -159,6 +159,22 @@ class TblProductOrder(models.Model):
         db_table = 'tbl_product_order'
 
 
+class TblProductOrderDisplay(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    oid = models.CharField(max_length=255)
+    pay_type = models.CharField(max_length=255)
+    uid = models.ForeignKey('TblAccount', models.DO_NOTHING, db_column='uid')
+    pid = models.ForeignKey('TblProduct', models.DO_NOTHING, db_column='pid')
+    status = models.IntegerField()
+    create_time = models.IntegerField()
+    pay_time = models.IntegerField()
+
+    class Meta:
+        managed = False
+        db_table = 'tbl_product_order'
+        verbose_name = verbose_name_plural = '作品出售记录'
+
+
 class TblProductSellHistory(models.Model):
     id = models.BigAutoField(primary_key=True)
     pid = models.ForeignKey('TblProduct', on_delete=models.DO_NOTHING, db_column='pid')
@@ -170,6 +186,7 @@ class TblProductSellHistory(models.Model):
     cid = models.CharField(max_length=255)
     status = models.BooleanField(verbose_name='是否上链')
     display = models.BooleanField(verbose_name='是否展示')
+    is_air_drop = models.BooleanField()
     create_time = models.IntegerField()
 
     class Meta:
